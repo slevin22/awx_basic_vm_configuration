@@ -44,10 +44,14 @@
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
     when: lxc_distro == 'debian'
     delegate_to: "{{ proxmox_api_host }}"
+    ignore_errors: true
+    timeout: 300
 
   - name: Create the '{{ ansible_user_name }}' user
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- useradd -u {{ uid }} -m -s /bin/bash {{ ansible_user_name }}"
     delegate_to: "{{ proxmox_api_host }}"
+    ignore_errors: true
+    timeout: 30
 
   - name: Setup SSH directory and inject public key
     ansible.builtin.shell: |
@@ -60,6 +64,7 @@
         usermod -aG sudo {{ ansible_user_name }}
       "
     delegate_to: "{{ proxmox_api_host }}"
+    timeout: 10
 
   - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
     ansible.builtin.shell: |
@@ -67,7 +72,10 @@
         echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/{{ ansible_user_name }}-nopasswd
       "
     delegate_to: "{{ proxmox_api_host }}"
+    timeout: 10
 
   - name: Restart the SSH service to apply changes
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- systemctl restart sshd"
     delegate_to: "{{ proxmox_api_host }}"
+    timeout: 30
+    ignore_errors: true
