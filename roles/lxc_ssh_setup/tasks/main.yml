@@ -32,6 +32,3 @@
       ansible.builtin.wait_for_connection:
         timeout: 30 # Longer timeout to ensure the new SSH service is up
 
-    - name: 'Bootstrap complete. The LXC is now ready for subsequent SSH-based plays.'
-      ansible.builtin.debug:
-        msg: "Bootstrap successful. You can now connect to {{ lxc_ip_address }} as {{ ansible_user_name }}."

@@ -56,13 +56,14 @@
         echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
         chown -R {{ ansible_user_name }}:{{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
         chmod 700 /home/{{ ansible_user_name }}/.ssh && \
-        chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys
+        chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
+        usermod -aG sudo {{ ansible_user_name }}
       "
     delegate_to: "{{ proxmox_api_host }}"
 
-  - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
-    ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
-    delegate_to: "{{ proxmox_api_host }}"
+  # - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
+  #   ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
+  #   delegate_to: "{{ proxmox_api_host }}"
 
   - name: Restart the SSH service to apply changes
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- systemctl restart sshd"
