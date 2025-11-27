@@ -1,2 +1,6 @@
 ---
 # vars file for lxc_ssh_setup
+
+proxmox_hosts:
+  mars: '10.1.0.200'
+  spaceport: '10.1.0.101'
