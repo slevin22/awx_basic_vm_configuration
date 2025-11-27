@@ -1,6 +1,6 @@
 ---
 - name: Ensure the target container is running
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
@@ -10,7 +10,7 @@
 
 - name: Install OpenSSH Server and update packages (Debian/Ubuntu)
   when: lxc_distro == 'debian'
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
@@ -21,7 +21,7 @@
   delegate_to: localhost
 
 - name: Create the 'ansible' user
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
@@ -32,7 +32,7 @@
   delegate_to: localhost
 
 - name: Setup SSH directory and inject public key
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
@@ -48,7 +48,7 @@
   delegate_to: localhost
 
 - name: Add 'ansible' user to sudoers with NOPASSWD
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
@@ -59,7 +59,7 @@
   delegate_to: localhost
 
 - name: Restart the SSH service to apply changes
-  community.general.proxmox:
+  community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
     api_user: "{{ proxmox_user }}"
     api_password: "{{ proxmox_password }}"
