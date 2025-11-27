@@ -1,9 +1,8 @@
 ---
 - name: install proxmoxer
   ansible.builtin.pip:
-    name: "promoxer"
+    name: "proxmoxer"
     state: present
-    break_system_packages: true
   delegate_to: localhost
   become: false
 
