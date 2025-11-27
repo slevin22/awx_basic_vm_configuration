@@ -7,6 +7,7 @@
     state: present
   delegate_to: localhost
   become: false
+  run_once: true
 
 - name: Set proxmox variables
   ansible.builtin.set_fact:
