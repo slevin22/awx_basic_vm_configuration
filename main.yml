@@ -11,7 +11,7 @@
   tasks:
 
     - name: Unix setup
-      when: proxmox_ostype != windows
+      when: proxmox_ostype != 'windows'
       block:
       #### installations  ####
         - name: Install basics
