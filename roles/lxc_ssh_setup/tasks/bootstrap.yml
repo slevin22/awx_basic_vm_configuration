@@ -3,7 +3,6 @@
   ansible.builtin.pip:
     name: "promoxer"
     state: present
-    break_system_packages: true
   delegate_to: localhost
   become: false
 
