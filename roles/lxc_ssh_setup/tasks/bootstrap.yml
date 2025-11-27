@@ -12,7 +12,6 @@
   ansible.builtin.set_fact:
     proxmox_api_host: "{{ proxmox_hosts[proxmox_node] }}"
     proxmox_user:     "{{ lookup('env', 'PROXMOX_USER') }}"
-    proxmox_username: "{{ lookup('env', 'PROX_USERNAME') }}"
     proxmox_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     lxc_vmid: "{{ proxmox_vmid }}"
     lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
@@ -29,8 +28,8 @@
 
 - name: host execution block
   vars:
-    ansible_user: "{{ proxmox_username }}"
-    ansible_password: "{{ proxmox_password }}"
+    ansible_user: "{{ lookup('env', 'PROX_USERNAME') }}"
+    ansible_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
   block:
 
   - name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
