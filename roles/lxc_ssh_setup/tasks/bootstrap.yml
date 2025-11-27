@@ -1,7 +1,9 @@
 ---
 - name: install proxmoxer
   ansible.builtin.pip:
-    name: "proxmoxer"
+    name: 
+      - "proxmoxer"
+      - "paramiko"
     state: present
   delegate_to: localhost
   become: false
@@ -10,6 +12,7 @@
   ansible.builtin.set_fact:
     proxmox_api_host: "{{ proxmox_hosts[proxmox_node] }}"
     proxmox_user:     "{{ lookup('env', 'PROXMOX_USER') }}"
+    proxmox_username: "{{ lookup('env', 'PROX_USERNAME') }}"
     proxmox_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     lxc_vmid: "{{ proxmox_vmid }}"
     lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
@@ -24,72 +27,50 @@
   delegate_to: localhost
   become: false
 
-- name: Install OpenSSH Server and update packages (Debian/Ubuntu)
+
+- name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
+  ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
   when: lxc_distro == 'debian'
-  community.proxmox.proxmox:
-    api_host: "{{ proxmox_api_host }}"
-    api_user: "{{ proxmox_user }}"
-    api_password: "{{ proxmox_password }}"
-    vmid: "{{ lxc_vmid }}"
-    state: exec
-    command: "apt update && apt install -y openssh-server sudo"
-  # Delegate to localhost so the command runs against the Proxmox API endpoint
-  delegate_to: localhost
+  delegate_to: "{{ proxmox_host_name }}"
+  ansible_user: "{{ proxmox_username }}"
+  ansible_password: "{{ proxmox_password }}"
   become: false
 
-- name: Create the 'ansible' user
-  community.proxmox.proxmox:
-    api_host: "{{ proxmox_api_host }}"
-    api_user: "{{ proxmox_user }}"
-    api_password: "{{ proxmox_password }}"
-    vmid: "{{ lxc_vmid }}"
-    state: exec
-    # -m: create home directory, -s: set shell to /bin/bash, -G: add to a group (optional)
-    command: "useradd -m -s /bin/bash {{ ansible_user_name }}"
-  delegate_to: localhost
+- name: 2. Create the '{{ ansible_user_name }}' user
+  ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- useradd -m -s /bin/bash {{ ansible_user_name }}"
+  delegate_to: "{{ proxmox_host_name }}"
+  ansible_user: "{{ proxmox_username }}"
+  ansible_password: "{{ proxmox_password }}"
   become: false
 
-- name: Setup SSH directory and inject public key
-  community.proxmox.proxmox:
-    api_host: "{{ proxmox_api_host }}"
-    api_user: "{{ proxmox_user }}"
-    api_password: "{{ proxmox_password }}"
-    vmid: "{{ lxc_vmid }}"
-    state: exec
-    # Commands are chained using && to ensure they run sequentially
-    command: |
+- name: 3. Setup SSH directory and inject public key
+  ansible.builtin.shell: |
+    pct exec {{ lxc_vmid }} -- bash -c "
       mkdir -p /home/{{ ansible_user_name }}/.ssh && \
-      echo '{{ ssh_public_key }}' | tee /home/{{ ansible_user_name }}/.ssh/authorized_keys > /dev/null && \
+      echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
       chown -R {{ ansible_user_name }}:{{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
       chmod 700 /home/{{ ansible_user_name }}/.ssh && \
       chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys
-  delegate_to: localhost
+    "
+  delegate_to: "{{ proxmox_host_name }}"
+  ansible_user: "{{ proxmox_username }}"
+  ansible_password: "{{ proxmox_password }}"
   become: false
 
-- name: Add 'ansible' user to sudoers with NOPASSWD
-  community.proxmox.proxmox:
-    api_host: "{{ proxmox_api_host }}"
-    api_user: "{{ proxmox_user }}"
-    api_password: "{{ proxmox_password }}"
-    vmid: "{{ lxc_vmid }}"
-    state: exec
-    # Use a safe method to append the sudoers line (using echo and tee)
-    command: "echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
-  delegate_to: localhost
+- name: 4. Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
+  ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
+  delegate_to: "{{ proxmox_host_name }}"
+  ansible_user: "{{ proxmox_username }}"
+  ansible_password: "{{ proxmox_password }}"
   become: false
 
-- name: Restart the SSH service to apply changes
-  community.proxmox.proxmox:
-    api_host: "{{ proxmox_api_host }}"
-    api_user: "{{ proxmox_user }}"
-    api_password: "{{ proxmox_password }}"
-    vmid: "{{ lxc_vmid }}"
-    state: exec
-    # Use systemctl for modern Linux systems
-    command: "systemctl restart sshd"
-  delegate_to: localhost
+- name: 5. Restart the SSH service to apply changes
+  ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- systemctl restart sshd"
+  delegate_to: "{{ proxmox_host_name }}"
+  ansible_user: "{{ proxmox_username }}"
+  ansible_password: "{{ proxmox_password }}"
   become: false
 
-- name: Verification message (Check IP and test SSH manually)
+- name: 6. Verification message
   ansible.builtin.debug:
     msg: "LXC container (VMID: {{ lxc_vmid }}) should now have SSH enabled. Use the container's IP address and the user '{{ ansible_user_name }}' to connect."
