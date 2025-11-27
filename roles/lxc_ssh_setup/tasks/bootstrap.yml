@@ -1,0 +1,74 @@
+---
+- name: Ensure the target container is running
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: started
+  delegate_to: localhost
+
+- name: Install OpenSSH Server and update packages (Debian/Ubuntu)
+  when: lxc_distro == 'debian'
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: exec
+    command: "apt update && apt install -y openssh-server sudo"
+  # Delegate to localhost so the command runs against the Proxmox API endpoint
+  delegate_to: localhost
+
+- name: Create the 'ansible' user
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: exec
+    # -m: create home directory, -s: set shell to /bin/bash, -G: add to a group (optional)
+    command: "useradd -m -s /bin/bash {{ ansible_user_name }}"
+  delegate_to: localhost
+
+- name: Setup SSH directory and inject public key
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: exec
+    # Commands are chained using && to ensure they run sequentially
+    command: |
+      mkdir -p /home/{{ ansible_user_name }}/.ssh && \
+      echo '{{ ssh_public_key }}' | tee /home/{{ ansible_user_name }}/.ssh/authorized_keys > /dev/null && \
+      chown -R {{ ansible_user_name }}:{{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
+      chmod 700 /home/{{ ansible_user_name }}/.ssh && \
+      chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys
+  delegate_to: localhost
+
+- name: Add 'ansible' user to sudoers with NOPASSWD
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: exec
+    # Use a safe method to append the sudoers line (using echo and tee)
+    command: "echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
+  delegate_to: localhost
+
+- name: Restart the SSH service to apply changes
+  community.general.proxmox:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    vmid: "{{ lxc_vmid }}"
+    state: exec
+    # Use systemctl for modern Linux systems
+    command: "systemctl restart sshd"
+  delegate_to: localhost
+
+- name: Verification message (Check IP and test SSH manually)
+  ansible.builtin.debug:
+    msg: "LXC container (VMID: {{ lxc_vmid }}) should now have SSH enabled. Use the container's IP address and the user '{{ ansible_user_name }}' to connect."

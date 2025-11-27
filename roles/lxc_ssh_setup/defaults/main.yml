@@ -1,0 +1,14 @@
+---
+
+proxmox_api_host: "{{ lookup('env', 'PROXMOX_URL') }}"
+ssh_public_key:   "{{ lookup('env', 'SSH_PUBLIC_KEY') }}"
+# --- Proxmox API Connection (Replace with your actual credentials) ---
+
+proxmox_user:     "{{ lookup('env', 'PROXMOX_USER') }}"
+proxmox_password: "{{ lookup('env',' PROXMOX_PASS') }}"
+
+# --- Configuration Variables ---
+ansible_user_name: ansible
+lxc_vmid: "{{ proxmox_vmid }}"
+lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
+

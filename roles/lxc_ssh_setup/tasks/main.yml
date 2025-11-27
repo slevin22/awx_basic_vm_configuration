@@ -1,0 +1,44 @@
+---
+
+- name: Conditional SSH Provisioning for LXC
+  hosts: lxc_container_host
+  gather_facts: false
+
+  # The 'block/rescue' structure is perfect for conditional execution on failure
+  block:
+    - name: Select lxc IP address
+      ansible.builtin.set_fact:
+        ansible_host: "{{ proxmox_lxc_interfaces | map(attribute='inet') | reject('equalto','127.0.0.1/8') | first | split('/') | first }}"
+
+    - name: Attempt SSH connection to LXC (Test for existing setup)
+      ansible.builtin.wait_for_connection:
+        timeout: 10 # Short timeout, we don't want to wait long if it's down
+
+    - name: "If SSH succeeds verify the ansible user exists"
+      ansible.builtin.command: id -u {{ ansible_user_name }}
+      register: user_check_result
+      changed_when: false
+
+    - name: LXC is provisioned. Continue with post-bootstrap tasks.
+      ansible.builtin.debug:
+        msg: "Success! SSH is enabled and the '{{ ansible_user_name }}' user is ready."
+
+  rescue:
+    - name: '== SSH FAILED: Triggering Proxmox Bootstrap =='
+      ansible.builtin.debug:
+        msg: "Connection to {{ ansible_host }} failed. Running bootstrap tasks via Proxmox API"
+
+    - name: Run the Proxmox 'pct exec' bootstrap tasks
+      ansible.builtin.include_tasks: bootstrap.yml
+      # The bootstrap tasks MUST be delegated to the Proxmox host
+      delegate_to: "{{ proxmox_api_host }}"
+      # 'run_once: true' ensures the tasks are only executed once even if multiple hosts are in 'hosts:'
+      run_once: true
+
+    - name: 'Final verification: Wait for new SSH service on LXC'
+      ansible.builtin.wait_for_connection:
+        timeout: 30 # Longer timeout to ensure the new SSH service is up
+
+    - name: 'Bootstrap complete. The LXC is now ready for subsequent SSH-based plays.'
+      ansible.builtin.debug:
+        msg: "Bootstrap successful. You can now connect to {{ lxc_ip_address }} as {{ ansible_user_name }}."
