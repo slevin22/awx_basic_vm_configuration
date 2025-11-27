@@ -3,6 +3,9 @@
   hosts: proxmox_all_running
   gather_facts: false
   become: true
+  become_method: sudo
+  become_user: root
+
   vars:
     ad_username: "{{ lookup('env', 'AD_USERNAME') }}"
     ad_password: "{{ lookup('env', 'AD_PASSWORD') }}"

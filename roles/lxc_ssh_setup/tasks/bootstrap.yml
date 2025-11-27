@@ -61,9 +61,12 @@
       "
     delegate_to: "{{ proxmox_api_host }}"
 
-  # - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
-  #   ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
-  #   delegate_to: "{{ proxmox_api_host }}"
+  - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
+    ansible.builtin.shell: |
+      /usr/sbin/pct exec {{ lxc_vmid }} -- sh -c "
+        echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee /etc/sudoers.d/{{ ansible_user_name }}-nopasswd
+      "
+    delegate_to: "{{ proxmox_api_host }}"
 
   - name: Restart the SSH service to apply changes
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- systemctl restart sshd"
