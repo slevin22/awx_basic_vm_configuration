@@ -61,8 +61,8 @@
             name: linux_joindomain
 
           vars:
-            join_user: "{{ ad_username }}"
-            domainname: "{{ join_domain }}"
-            join_user_pass: "{{ ad_password }}"
+            Join_User: "{{ ad_username }}"
+            DomainName: "{{ join_domain }}"
+            Join_User_Pass: "{{ ad_password }}"
             realm: "{{ join_realm }}"
             server: "{{ join_server }}"
