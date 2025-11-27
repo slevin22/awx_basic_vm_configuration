@@ -26,9 +26,6 @@
 
     - name: Run the Proxmox 'pct exec' bootstrap tasks
       ansible.builtin.include_tasks: bootstrap.yml
-      # The bootstrap tasks MUST be delegated to the Proxmox host
-      delegate_to: "{{ proxmox_api_host }}"
-      # 'run_once: true' ensures the tasks are only executed once even if multiple hosts are in 'hosts:'
       run_once: true
 
     - name: 'Final verification: Wait for new SSH service on LXC'
