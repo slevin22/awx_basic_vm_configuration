@@ -40,16 +40,16 @@
   become: true
   block:
 
-  - name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
+  - name: Install OpenSSH Server and update packages (Debian/Ubuntu)
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
     when: lxc_distro == 'debian'
     delegate_to: "{{ proxmox_api_host }}"
 
-  - name: 2. Create the '{{ ansible_user_name }}' user
+  - name: Create the '{{ ansible_user_name }}' user
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- useradd -u {{ uid }} -m -s /bin/bash {{ ansible_user_name }}"
     delegate_to: "{{ proxmox_api_host }}"
 
-  - name: 3. Setup SSH directory and inject public key
+  - name: Setup SSH directory and inject public key
     ansible.builtin.shell: |
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /home/{{ ansible_user_name }}/.ssh && \
@@ -60,15 +60,10 @@
       "
     delegate_to: "{{ proxmox_api_host }}"
 
-  - name: 4. Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
+  - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
     delegate_to: "{{ proxmox_api_host }}"
 
-  - name: 5. Restart the SSH service to apply changes
+  - name: Restart the SSH service to apply changes
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- systemctl restart sshd"
     delegate_to: "{{ proxmox_api_host }}"
-
-  - name: 6. Verification message
-    ansible.builtin.debug:
-      msg: "LXC container (VMID: {{ lxc_vmid }}) should now have SSH enabled. Use the container's IP address and the user '{{ ansible_user_name }}' to connect."
-    become: false
