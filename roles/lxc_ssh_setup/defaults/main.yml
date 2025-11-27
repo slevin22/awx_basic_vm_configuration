@@ -1,7 +1,7 @@
 ---
 
 proxmox_api_host: "{{ lookup('env', 'PROXMOX_URL') }}"
-ssh_public_key:   "{{ lookup('env', 'SSH_PUBLIC_KEY') }}"
+ssh_public_key:   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEzKuSBOCcjseAEl2k/HAKTAzGDBxXhvU7L5EZLEkmSy"
 # --- Proxmox API Connection (Replace with your actual credentials) ---
 
 proxmox_user:     "{{ lookup('env', 'PROXMOX_USER') }}"
