@@ -30,7 +30,7 @@
 - name: host execution block
   vars:
     ansible_user: "{{ proxmox_username }}"
-    ansible_password: "{{ proxmox_password }}"
+    ansible_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
   block:
 
   - name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
