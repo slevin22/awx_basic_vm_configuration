@@ -1,4 +1,12 @@
 ---
+- name: install proxmoxer
+  ansible.builtin.pip:
+    name: "promoxer"
+    state: present
+    break_system_packages: true
+  delegate_to: localhost
+  become: false
+
 - name: Ensure the target container is running
   community.proxmox.proxmox:
     api_host: "{{ proxmox_api_host }}"
