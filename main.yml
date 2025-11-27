@@ -4,6 +4,9 @@
   vars:
     ad_username: "{{ lookup('env', 'AD_USERNAME') }}"
     ad_password: "{{ lookup('env', 'AD_PASSWORD') }}"
+    join_realm: OAK.HOME
+    join_domain: oak.home
+    join_server: "10.1.0.220"
 
   tasks:
 
@@ -11,46 +14,54 @@
       when: proxmox_ostype != windows
       block:
       #### installations  ####
-      - name: Install basics
-        ansible.builtin.package:
-          name:
-            - vim
-            - tmux
-            - curl
+        - name: Install basics
+          ansible.builtin.package:
+            name:
+              - vim
+              - tmux
+              - curl
 
 
       #### identities ####
-      - name: Add groups
-        loop_control:
-          loop_var: group
-        ansible.builtin.group:
-          name: "{{ group.name }}"
-          gid: "{{ group.gid }}"
-          state: present
-        loop:
-          - name: media-managers
-            gid: 421
+        - name: Add groups
+          loop_control:
+            loop_var: group
+          ansible.builtin.group:
+            name: "{{ group.name }}"
+            gid: "{{ group.gid }}"
+            state: present
+          loop:
+            - name: media-managers
+              gid: 421
 
 
-      
-      - name: Add users 
-        loop_control:
-          loop_var: user
-        ansible.builtin.user:
-          name: "{{ user.name }}"
-          comment: Ansible created
-          uid: "{{ user.uid }}"
-          groups: "{{ user.groups | default(omit) }}"
-          create_home: "{{ user.create_home }}"
-          shell: "{{ user.shell | default('/bin/bash') }}"
-          ssh_public_key: "{{ user.pubkey | default(omit) }}"
-          state: present
-          append: yes
-
-        loop:
-          - name: automation
-            uid: 1007
-            groups: media-managers
-            create_home: no
+        - name: Add users
+          loop_control:
+            loop_var: user
+          ansible.builtin.user:
+            name: "{{ user.name }}"
+            comment: Ansible created
+            uid: "{{ user.uid }}"
+            groups: "{{ user.groups | default(omit) }}"
+            create_home: "{{ user.create_home }}"
+            shell: "{{ user.shell | default('/bin/bash') }}"
+            ssh_public_key: "{{ user.pubkey | default(omit) }}"
+            state: present
+            append: true
+          loop:
+            - name: automation
+              uid: 1007
+              groups: media-managers
+              create_home: false
 
 
+      #### domain join ####
+        - name: Domain join
+          ansible.builtin.include_role:
+            name: mahdi22.linux_joindomain
+          vars:
+            join_user: "{{ ad_username }}"
+            domainname: "{{ join_domain }}"
+            join_user_pass: "{{ ad_password }}"
+            realm: "{{ join_realm }}"
+            server: "{{ join_server }}"
