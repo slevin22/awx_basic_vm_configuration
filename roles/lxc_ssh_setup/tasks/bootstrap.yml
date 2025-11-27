@@ -30,6 +30,9 @@
   vars:
     ansible_user: "{{ lookup('env', 'PROX_USERNAME') }}"
     ansible_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
+    proxmox_api_host: "{{ proxmox_hosts[proxmox_node] }}"
+    lxc_vmid: "{{ proxmox_vmid }}"
+    lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
   block:
 
   - name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
