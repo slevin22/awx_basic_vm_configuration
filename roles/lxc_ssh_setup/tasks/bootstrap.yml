@@ -7,6 +7,7 @@
     vmid: "{{ lxc_vmid }}"
     state: started
   delegate_to: localhost
+  become: false
 
 - name: Install OpenSSH Server and update packages (Debian/Ubuntu)
   when: lxc_distro == 'debian'
@@ -19,6 +20,7 @@
     command: "apt update && apt install -y openssh-server sudo"
   # Delegate to localhost so the command runs against the Proxmox API endpoint
   delegate_to: localhost
+  become: false
 
 - name: Create the 'ansible' user
   community.proxmox.proxmox:
@@ -30,6 +32,7 @@
     # -m: create home directory, -s: set shell to /bin/bash, -G: add to a group (optional)
     command: "useradd -m -s /bin/bash {{ ansible_user_name }}"
   delegate_to: localhost
+  become: false
 
 - name: Setup SSH directory and inject public key
   community.proxmox.proxmox:
@@ -46,6 +49,7 @@
       chmod 700 /home/{{ ansible_user_name }}/.ssh && \
       chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys
   delegate_to: localhost
+  become: false
 
 - name: Add 'ansible' user to sudoers with NOPASSWD
   community.proxmox.proxmox:
@@ -57,6 +61,7 @@
     # Use a safe method to append the sudoers line (using echo and tee)
     command: "echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
   delegate_to: localhost
+  become: false
 
 - name: Restart the SSH service to apply changes
   community.proxmox.proxmox:
@@ -68,6 +73,7 @@
     # Use systemctl for modern Linux systems
     command: "systemctl restart sshd"
   delegate_to: localhost
+  become: false
 
 - name: Verification message (Check IP and test SSH manually)
   ansible.builtin.debug:
