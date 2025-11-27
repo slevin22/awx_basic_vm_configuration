@@ -36,19 +36,19 @@
   block:
 
   - name: 1. Install OpenSSH Server and update packages (Debian/Ubuntu)
-    ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
+    ansible.builtin.shell: "/usr/bin/pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
     when: lxc_distro == 'debian'
     delegate_to: "{{ proxmox_api_host }}"
     become: false
 
   - name: 2. Create the '{{ ansible_user_name }}' user
-    ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- useradd -m -s /bin/bash {{ ansible_user_name }}"
+    ansible.builtin.shell: "/usr/bin/pct exec {{ lxc_vmid }} -- useradd -m -s /bin/bash {{ ansible_user_name }}"
     delegate_to: "{{ proxmox_api_host }}"
     become: false
 
   - name: 3. Setup SSH directory and inject public key
     ansible.builtin.shell: |
-      pct exec {{ lxc_vmid }} -- bash -c "
+      /usr/bin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /home/{{ ansible_user_name }}/.ssh && \
         echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
         chown -R {{ ansible_user_name }}:{{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
@@ -59,12 +59,12 @@
     become: false
 
   - name: 4. Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
-    ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
+    ansible.builtin.shell: "/usr/bin/pct exec {{ lxc_vmid }} -- echo '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/{{ ansible_user_name }}-nopasswd"
     delegate_to: "{{ proxmox_api_host }}"
     become: false
 
   - name: 5. Restart the SSH service to apply changes
-    ansible.builtin.shell: "pct exec {{ lxc_vmid }} -- systemctl restart sshd"
+    ansible.builtin.shell: "/usr/bin/pct exec {{ lxc_vmid }} -- systemctl restart sshd"
     delegate_to: "{{ proxmox_api_host }}"
     become: false
 
