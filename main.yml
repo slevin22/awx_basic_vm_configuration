@@ -1,6 +1,7 @@
 ---
 - name: Basic VM setup
   hosts: proxmox_all_running
+  gather_facts: false
   vars:
     ad_username: "{{ lookup('env', 'AD_USERNAME') }}"
     ad_password: "{{ lookup('env', 'AD_PASSWORD') }}"

@@ -1,10 +1,6 @@
 ---
 
 - name: Conditional SSH Provisioning for LXC
-  hosts: lxc_container_host
-  gather_facts: false
-
-  # The 'block/rescue' structure is perfect for conditional execution on failure
   block:
     - name: Select lxc IP address
       ansible.builtin.set_fact:
