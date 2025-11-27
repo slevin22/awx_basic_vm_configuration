@@ -59,6 +59,7 @@
         - name: Domain join
           ansible.builtin.include_role:
             name: linux_joindomain
+
           vars:
             join_user: "{{ ad_username }}"
             domainname: "{{ join_domain }}"
