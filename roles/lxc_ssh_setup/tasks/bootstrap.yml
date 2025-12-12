@@ -87,6 +87,18 @@
     delegate_to: "{{ proxmox_api_host }}"
     timeout: 10
 
+  - name: Enable passkey root ssh access
+    ansible.builtin.shell: |
+      /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
+      sed -i -e '/^PermitRootLogin/c\PermitRootLogin prohibit-password' \
+           -e '/^#PermitRootLogin/c\PermitRootLogin prohibit-password' \
+           -e '/^PubkeyAuthentication/c\PubkeyAuthentication yes' \
+           -e '/^#PubkeyAuthentication/c\PubkeyAuthentication yes' \
+           /etc/ssh/sshd_config \
+      "
+    delegate_to: "{{ proxmox_api_host }}"
+    timeout: 10
+
   - name: Add '{{ ansible_user_name }}' user to sudoers with NOPASSWD
     ansible.builtin.shell: |
       /usr/sbin/pct exec {{ lxc_vmid }} -- sh -c "
