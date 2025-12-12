@@ -5,6 +5,7 @@
     - name: Select lxc IP address
       ansible.builtin.set_fact:
         ansible_host: "{{ proxmox_lxc_interfaces | selectattr('inet', 'defined') | map(attribute='inet') | reject('equalto','127.0.0.1/8') | first | split('/') | first }}"
+      ignore_errors: true
 
     - name: Attempt SSH connection to LXC (Test for existing setup)
       ansible.builtin.wait_for_connection:
@@ -14,10 +15,6 @@
       ansible.builtin.command: id -u {{ ansible_user_name }}
       register: user_check_result
       changed_when: false
-
-    - name: LXC is provisioned. Continue with post-bootstrap tasks.
-      ansible.builtin.debug:
-        msg: "Success! SSH is enabled and the '{{ ansible_user_name }}' user is ready."
 
   rescue:
     - name: '== SSH FAILED: Triggering Proxmox Bootstrap =='
