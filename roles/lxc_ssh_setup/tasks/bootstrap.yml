@@ -61,7 +61,7 @@
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /home/{{ ansible_user_name }}/.ssh && \
         echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
-        chown -R {{ ansible_user_name }}:{{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
+        chown -R {{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
         chmod 700 /home/{{ ansible_user_name }}/.ssh && \
         chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
         usermod -aG sudo {{ ansible_user_name }}
