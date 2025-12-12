@@ -44,7 +44,7 @@
   block:
 
   - name: Install OpenSSH Server and update packages (Debian/Ubuntu)
-    ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- apt update && apt install -y openssh-server sudo"
+    ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- apt update && apt install -y sudo openssh-server"
     when: lxc_distro == 'debian'
     delegate_to: "{{ proxmox_api_host }}"
     ignore_errors: true
