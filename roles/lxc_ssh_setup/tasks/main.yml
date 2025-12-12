@@ -4,7 +4,7 @@
   block:
     - name: Select lxc IP address
       ansible.builtin.set_fact:
-        ansible_host: "{{ proxmox_lxc_interfaces | map(attribute='inet') | reject('equalto','127.0.0.1/8') | first | split('/') | first }}"
+        ansible_host: "{{ proxmox_lxc_interfaces | selectattr('inet', 'defined') | map(attribute='inet') | reject('equalto','127.0.0.1/8') | first | split('/') | first }}"
 
     - name: Attempt SSH connection to LXC (Test for existing setup)
       ansible.builtin.wait_for_connection:
