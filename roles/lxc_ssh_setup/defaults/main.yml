@@ -1,7 +1,6 @@
 ---
 
 ansible_user_name: ansible-local
-ansible_user_id: 99521
 ssh_public_key:   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEzKuSBOCcjseAEl2k/HAKTAzGDBxXhvU7L5EZLEkmSy"
 
 

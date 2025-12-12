@@ -35,7 +35,7 @@
     ansible_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     ansible_become_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     proxmox_api_host: "{{ proxmox_hosts[proxmox_node] }}"
-    uid: "{{ ansible_user_id }}"
+    uid: "99521"
     lxc_vmid: "{{ proxmox_vmid }}"
     lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
   become_method: sudo
