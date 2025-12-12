@@ -1,0 +1,23 @@
+---
+- name: Repository setup
+  hosts: proxmox_all_running
+  gather_facts: true
+  become: true
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    - name: Create groups based on OS family
+      ansible.builtin.group_by:
+        key: "os_family_{{ ansible_os_family }}"
+      
+
+    # - name: Perform other OS-specific tasks
+    #   hosts: os_family_Debian 
+    #   tasks:
+
+
+        # - name: Configure repos
+        #   ansible.builtin.deb822_repository:
+        #     name: apache2
+        #     state: present
