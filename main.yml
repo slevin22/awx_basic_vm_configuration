@@ -5,7 +5,7 @@
   become: true
   become_method: sudo
   become_user: root
-  strategy: free
+  #strategy: free
 
   vars:
     ad_username: "{{ lookup('env', 'AD_USERNAME') }}"
