@@ -66,7 +66,8 @@
     ansible.builtin.shell: |
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /home/{{ ansible_user_name }}/.ssh && \
-        echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
+        touch /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
+        grep -q -F "{{ ssh_public_key }} ansible" /home/{{ ansible_user_name }}/.ssh/authorized_keys || echo "{{ ssh_public_key }} ansible" | sudo tee -a /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
         chown -R {{ ansible_user_name }} /home/{{ ansible_user_name }} && \
         chown -R {{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
         chmod 700 /home/{{ ansible_user_name }}/.ssh && \
@@ -80,7 +81,8 @@
     ansible.builtin.shell: |
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /root/.ssh && \
-        echo '{{ ssh_public_key }}' >> /root/.ssh/authorized_keys && \
+        touch /root/.ssh/authorized_keys && \
+        grep -q -F "{{ ssh_public_key }} ansible" /root/.ssh/authorized_keys || echo "{{ ssh_public_key }} ansible" | sudo tee -a /root/.ssh/authorized_keys && \
         chmod 700 /root/.ssh && \
         chmod 600 /root/.ssh/authorized_keys 
       "
