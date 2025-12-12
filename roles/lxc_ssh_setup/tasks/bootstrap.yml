@@ -35,7 +35,7 @@
     ansible_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     ansible_become_password: "{{ lookup('env',' PROXMOX_PASSWORD') }}"
     proxmox_api_host: "{{ proxmox_hosts[proxmox_node] }}"
-    uid: "99521"
+    uid: "9521"
     lxc_vmid: "{{ proxmox_vmid }}"
     lxc_distro: "{{ proxmox_ostype }}" # Options: debian, redhat (for apt or yum/dnf commands)
   become_method: sudo
@@ -61,10 +61,22 @@
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /home/{{ ansible_user_name }}/.ssh && \
         echo '{{ ssh_public_key }}' > /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
+        chown -R {{ ansible_user_name }} /home/{{ ansible_user_name }} && \
         chown -R {{ ansible_user_name }} /home/{{ ansible_user_name }}/.ssh && \
         chmod 700 /home/{{ ansible_user_name }}/.ssh && \
         chmod 600 /home/{{ ansible_user_name }}/.ssh/authorized_keys && \
         usermod -aG sudo {{ ansible_user_name }}
+      "
+    delegate_to: "{{ proxmox_api_host }}"
+    timeout: 10
+
+  - name: Setup SSH directory for root and inject public key
+    ansible.builtin.shell: |
+      /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
+        mkdir -p /root/.ssh && \
+        echo '{{ ssh_public_key }}' > /root/.ssh/authorized_keys && \
+        chmod 700 /root/.ssh && \
+        chmod 600 /root/.ssh/authorized_keys && \
       "
     delegate_to: "{{ proxmox_api_host }}"
     timeout: 10
