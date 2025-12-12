@@ -6,9 +6,9 @@
       ansible.builtin.set_fact:
         ansible_host: "{{ proxmox_lxc_interfaces | map(attribute='inet') | reject('equalto','127.0.0.1/8') | first | split('/') | first }}"
 
-    - name: Attempt SSH connection to LXC (Test for existing setup)
-      ansible.builtin.wait_for_connection:
-        timeout: 3 # Short timeout, we don't want to wait long if it's down
+    # - name: Attempt SSH connection to LXC (Test for existing setup)
+    #   ansible.builtin.wait_for_connection:
+    #     timeout: 3 # Short timeout, we don't want to wait long if it's down
 
     - name: "If SSH succeeds verify the ansible user exists"
       ansible.builtin.command: id -u {{ ansible_user_name }}
