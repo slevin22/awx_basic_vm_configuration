@@ -51,6 +51,12 @@
     timeout: 300
 
   - name: Create the '{{ ansible_user_name }}' user
+    ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- userdel {{ ansible_user_name }}"
+    delegate_to: "{{ proxmox_api_host }}"
+    ignore_errors: true
+    timeout: 30
+
+  - name: Create the '{{ ansible_user_name }}' user
     ansible.builtin.shell: "/usr/sbin/pct exec {{ lxc_vmid }} -- useradd -u {{ uid }} -m -s /bin/bash {{ ansible_user_name }}"
     delegate_to: "{{ proxmox_api_host }}"
     ignore_errors: true
@@ -74,7 +80,7 @@
     ansible.builtin.shell: |
       /usr/sbin/pct exec {{ lxc_vmid }} -- bash -c "
         mkdir -p /root/.ssh && \
-        echo '{{ ssh_public_key }}' > /root/.ssh/authorized_keys && \
+        echo '{{ ssh_public_key }}' >> /root/.ssh/authorized_keys && \
         chmod 700 /root/.ssh && \
         chmod 600 /root/.ssh/authorized_keys && \
       "
