@@ -2,9 +2,9 @@
 - name: Basic VM setup
   hosts: proxmox_all_running
   gather_facts: false
-  become: true
-  become_method: sudo
-  become_user: root
+  # become: true
+  # become_method: sudo
+  # become_user: root
   #strategy: free
 
   vars:
